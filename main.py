@@ -102,7 +102,7 @@ class TempDTO(EventInDTO):
 
 @app.post("/api/temp")
 async def push_temp(
-            id: int, value: int = Body(...), user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
+        id: int, value: int = Body(...), user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
 ):
     if not user:
         raise Exception()
@@ -181,6 +181,17 @@ class DataPush(BaseModel):
     light: int
     setTemp: int
     setLx: int
+
+
+@app.post("/api/set")
+async def set_value(
+        type_: str = Body(..., alias="type"),
+        value: float = Body(...),
+        room_id: int = Body(1),
+        repository=Depends(get_room_stats_repo)
+):
+    await repository.set_params(type_=type_, value=value, room_id=room_id)
+    return 1
 
 
 @app.post("/api/push")
