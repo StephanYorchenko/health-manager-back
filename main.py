@@ -129,9 +129,12 @@ class HmotnostDTO(EventInDTO):
     type_event = EventTypes.hmotnost
 
 
-@app.post("/api/patient/{id}/hmotnost")
+@app.post("/api/hmotnost")
 async def push_hmotnost(
-        id: int, value: int = Body(...), user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
+        id: int = Body(...),
+        value: int = Body(...),
+        user=Depends(get_user_from_token),
+        repository=Depends(get_room_stats_repo)
 ):
     if not user:
         raise Exception()
@@ -205,7 +208,7 @@ async def push_data(
         repository=Depends(get_room_stats_repo)
 ):
     print("Даня лох", await request.json())
-    for k, v in data.dict():
+    for k, v in data.dict().items():
         await repository.push_new_value_room(room_id=1, type_=k, value=v)
     need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "mt", "lx"])
     need_heat = need_to_set_up.get("heat", 25)
