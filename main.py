@@ -187,20 +187,24 @@ class DataPush(BaseModel):
 
 @app.post("/api/set")
 async def set_value(
+        request: Request,
         type_: str = Body(..., alias="type"),
         value: float = Body(...),
         room_id: int = Body(1),
         repository=Depends(get_room_stats_repo)
 ):
+    print(await request.json())
     await repository.set_params(type_=type_, value=value, room_id=room_id)
     return 1
 
 
 @app.post("/api/push")
 async def push_data(
+        request: Request,
         data: DataPush = Body(...),
         repository=Depends(get_room_stats_repo)
 ):
+    print("Даня лох", await request.json())
     for k, v in data.dict():
         await repository.push_new_value_room(room_id=1, type_=k, value=v)
     need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "vl", "lx"])
