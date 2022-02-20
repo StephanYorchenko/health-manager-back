@@ -213,13 +213,14 @@ async def push_data(
     for k, v in data.dict().items():
         await repository.push_new_value_room(room_id=1, type_=k, value=v)
     print('############')
-    need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "mt", "lx"])
+    need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "mt", "lx", "wg"])
     print('&&&&&&&&&&&&&&&&')
-    need_heat = need_to_set_up.get("heat", 25)
-    mt = need_to_set_up.get("mt", 25)
-    lx = need_to_set_up.get("lx", 3500)
+    need_heat = int(need_to_set_up.get("heat", 20))
+    mt = int(need_to_set_up.get("mt", 20))
+    lx = int(need_to_set_up.get("lx", 350))
+    wg = int(need_to_set_up.get("wg", 0))
     print("*****************")
-    return f"1 {need_heat}\n2 {mt}\n3 {lx}\n"
+    return f"1 {need_heat}\n2 {mt}\n3 {lx}\n4 {wg}\n"
 
 
 if __name__ == "__main__":
