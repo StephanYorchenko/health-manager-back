@@ -204,10 +204,11 @@ async def set_value(
 @app.post("/api/push")
 async def push_data(
         request: Request,
-        data: DataPush = Body(...),
         repository=Depends(get_room_stats_repo)
 ):
-    print("Даня лох", await request.json())
+    data = await request.json()
+    print("Даня лох", data)
+    data = DataPush.parse_obj(data)
     for k, v in data.dict().items():
         await repository.push_new_value_room(room_id=1, type_=k, value=v)
     need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "mt", "lx"])
