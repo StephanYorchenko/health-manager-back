@@ -4,7 +4,7 @@ from datetime import datetime, date
 from typing import List, Optional
 
 import uvicorn
-from fastapi import Depends
+from fastapi import Depends, Body
 from pydantic import BaseModel
 from starlette.concurrency import run_until_first_complete
 from starlette.websockets import WebSocket
@@ -210,6 +210,22 @@ async def get_patient_ivl(
 async def check_user(user=Depends(get_user_from_token), repository=Depends(get_user_repository)):
     user = await repository.get_by_login(login=user)
     return user is not None
+
+
+class DataPush(BaseModel):
+    temp: int
+    hum: int
+    lx: int
+    fan: int
+    heat: int
+    light: int
+    setTemp: int
+    setLx: int
+
+
+@app.post("/api/push")
+def push_data(data: DataPush = Body(...)):
+    return data
 
 
 if __name__ == "__main__":
