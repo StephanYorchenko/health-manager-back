@@ -171,9 +171,12 @@ class StatsPatientRepo:
                 .order_by(room_params.c.saved_at.desc())
         )
         result = await self.database.fetch_all(query)
-        return {
-            k.get("type"): k.get("value") for k in result
-        }
+        res = {}
+        for i in result:
+            t = i.get("type")
+            if t not in res:
+                res[t] = i.get("value")
+        return res
 
     async def set_params(self, room_id: int, type_: str, value: int):
         query = (
