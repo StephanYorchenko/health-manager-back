@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, and_
 
 from schema import User, RoomDTO
-from tables import users, rooms, users_rooms, stats_patient, room_params
+from tables import users, rooms, users_rooms, stats_patient, room_params, stats_room
 
 
 class UserOutDTO(BaseModel):
@@ -132,18 +132,49 @@ class StatsPatientRepo:
         )
         await self.database.execute(query)
 
-    async def get_setted_params(self, room_id, type_: str):
+    async def get_n_last_values_room(self, room_id: int, type_: str, count: int = 10):
         query = (
-            select((room_params.c.value,))
+            select((stats_room.c.value, stats_room.c.saved_at))
+                .select_from(stats_room)
+                .where(and_(stats_room.c.user_id == room_id, stats_room.c.type == type_))
+                .order_by(stats_room.c.saved_at.desc())
+                .limit(count)
+        )
+        result = await self.database.fetch_all(query)
+        return [
+            StatsType(
+                type=type_,
+                value=v.get("value"),
+                saved_at=v.get("saved_at"),
+            )
+            for v in result
+        ]
+
+    async def push_new_value_room(self, room_id: int, type_: str, value: float):
+        query = (
+            stats_room.insert().values(
+                room_id=room_id,
+                type=type_,
+                value=value,
+                saved_at=datetime.datetime.now()
+            )
+        )
+        await self.database.execute(query)
+
+    async def get_setted_params(self, room_id, type_: List[str] = None):
+        if type_ is None:
+            type_ = []
+        query = (
+            select((room_params.c.value, room_params.c.type))
                 .select_from(room_params)
-                .where(and_(room_params.c.room_id == room_id, room_params.c.type == type_))
+                .where(and_(room_params.c.room_id == room_id, room_params.c.type.in_(type_)))
                 .order_by(room_params.c.saved_at.desc())
+                .distinct(room_params.c.type)
         )
-        result = await self.database.fetch_one(query)
-        return ParamsSetted(
-            type=type_,
-            value=result.get("value")
-        )
+        result = await self.database.fetch_all(query)
+        return {
+            k.get("type"): k.get("value") for k in result
+        }
 
     async def set_params(self, room_id: int, type_: str, value: int):
         query = (

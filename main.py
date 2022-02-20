@@ -12,7 +12,7 @@ from starlette.websockets import WebSocket
 
 from app import app, broadcast
 from auth import get_user_from_token
-from dependencies import get_user_repository, get_rooms_repo
+from dependencies import get_user_repository, get_rooms_repo, get_room_stats_repo
 from schema import RoomDTO, User
 
 
@@ -202,9 +202,12 @@ async def get_patient(id: int, repository=Depends(get_user_repository)):
 
 @app.get("/api/patient/{id}/ivl")
 async def get_patient_ivl(
-        id: int
+        id: int,
+        repository=Depends(get_room_stats_repo)
 ):
-    return False
+    return await repository.get_n_last_values(
+        patient_id=id, type_="ivl", count=1
+    )
 
 
 @app.get("/api/check")
@@ -225,9 +228,17 @@ class DataPush(BaseModel):
 
 
 @app.post("/api/push")
-async def push_data(request: Request):
-    print(await request.json())
-    return 1
+async def push_data(
+        data: DataPush = Body(...),
+        repository=Depends(get_room_stats_repo)
+):
+    for k, v in data.dict():
+        await repository.push_new_value_room(room_id=1, type_=k, value=v)
+    need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "vl", "lx"])
+    need_heat = need_to_set_up.get("heat", 25)
+    mt = 25
+    lx = need_to_set_up.get("lx", 3500)
+    return f"1 {need_heat}\n2 {mt}\n3 {lx}\n"
 
 
 if __name__ == "__main__":

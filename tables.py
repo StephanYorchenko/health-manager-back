@@ -50,6 +50,16 @@ stats_patient = Table(
     Column("saved_at", DateTime(timezone=True))
 )
 
+
+stats_room = Table(
+    "stats_room",
+    metadata,
+    Column("room_id",  ForeignKey(_room_id, ondelete="CASCADE"), nullable=False),
+    Column("type", String, nullable=False),
+    Column("value", Float),
+    Column("saved_at", DateTime(timezone=True))
+)
+
 room_params = Table(
     "room_params",
     metadata,
