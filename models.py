@@ -116,7 +116,7 @@ class StatsPatientRepo:
             StatsType(
                 type=type_,
                 value=v.get("value"),
-                saved_at=v.get("saved_at"),
+                saved_at=str(v.get("saved_at")),
             )
             for v in result
         ]
@@ -145,7 +145,7 @@ class StatsPatientRepo:
             StatsType(
                 type=type_,
                 value=v.get("value"),
-                saved_at=v.get("saved_at"),
+                saved_at=str(v.get("saved_at")),
             )
             for v in result
         ]

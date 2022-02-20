@@ -102,10 +102,12 @@ class TempDTO(EventInDTO):
 
 @app.post("/api/temp")
 async def push_temp(
-        id: int, value: int = Body(...), user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
+        id: int = Body(...), value: float = Body(...), user=Depends(get_user_from_token),
+        repository=Depends(get_room_stats_repo)
 ):
     if not user:
         raise Exception()
+    print(value,)
     await repository.push_new_value(patient_id=id, type_="temp", value=value, )
     return True
 
