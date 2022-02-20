@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, and_
 
 from schema import User, RoomDTO
-from tables import users, rooms, users_rooms, stats_patient, room_params, stats_room, rozbory
+from tables import users, rooms, users_rooms, stats_patient, room_params, stats_room, rozbory, jmenovani
 
 
 class UserOutDTO(BaseModel):
@@ -232,6 +232,40 @@ class StatsPatientRepo:
     async def push_anal(self, author_id: int, user_id: int, text: str):
         query = (
             rozbory.insert().values(
+                text=text,
+                author_id=author_id,
+                user_id=user_id,
+                saved_at=datetime.datetime.now(),
+            )
+        )
+
+        await self.database.execute(query)
+
+    async def get_jmenovani(self, user_id: int, count: int = -1):
+        query = (
+            jmenovani
+                .join(users, users.c.id == jmenovani.c.author_id)
+                .select()
+                .where(jmenovani.c.user_id == user_id)
+                .order_by(jmenovani.c.saved_at.desc())
+        )
+        res = await self.database.fetch_all(query)
+        return [
+            AnalOutDTO(
+                id=v[jmenovani.c.id],
+                text=v[jmenovani.c.text],
+                author_first_name=v[users.c.first_name],
+                author_second_name=v[users.c.second_name],
+                author_last_name=v.get(users.c.last_name, ""),
+                author_id=v[jmenovani.c.author_id],
+                saved_at=str(v[jmenovani.c.saved_at]),
+            )
+            for v in res
+        ]
+
+    async def push_jmenovani(self, author_id: int, user_id: int, text: str):
+        query = (
+            jmenovani.insert().values(
                 text=text,
                 author_id=author_id,
                 user_id=user_id,

@@ -78,3 +78,13 @@ rozbory = Table(
     Column("text", Text),
     Column("saved_at", DateTime(timezone=True), nullable=False)
 )
+
+jmenovani = Table(
+    "jmenovani",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", ForeignKey(_user_id, ondelete="CASCADE"), nullable=False),
+    Column("author_id", ForeignKey(_user_id, ondelete="CASCADE"), nullable=False),
+    Column("text", Text),
+    Column("saved_at", DateTime(timezone=True), nullable=False)
+)

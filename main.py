@@ -230,6 +230,13 @@ async def get_anals(
     return await repository.get_anals(user_id=id)
 
 
+@app.get("/api/patient/{id}/jmenovani")
+async def get_jmenovani(
+        id: int, repository=Depends(get_room_stats_repo)
+):
+    return await repository.get_jmenovani(user_id=id)
+
+
 class Text(BaseModel):
     text: str
 
@@ -244,6 +251,19 @@ async def push_anal(
 ):
     us = await users_repo.get_by_login(user)
     await repository.push_anal(user_id=id, author_id=us.id, text=input_dto.text)
+    return True
+
+
+@app.post("/api/patient/{id}/jmenovani")
+async def push_jmenovani(
+        id: int,
+        input_dto: Text,
+        user=Depends(get_user_from_token),
+        repository=Depends(get_room_stats_repo),
+        users_repo=Depends(get_user_repository)
+):
+    us = await users_repo.get_by_login(user)
+    await repository.push_jmenovani(user_id=id, author_id=us.id, text=input_dto.text)
     return True
 
 
