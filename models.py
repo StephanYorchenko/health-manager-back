@@ -2,11 +2,11 @@ import datetime
 import random
 from typing import Optional, List, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select, and_
 
 from schema import User, RoomDTO
-from tables import users, rooms, users_rooms, stats_patient, room_params, stats_room
+from tables import users, rooms, users_rooms, stats_patient, room_params, stats_room, rozbory
 
 
 class UserOutDTO(BaseModel):
@@ -14,6 +14,16 @@ class UserOutDTO(BaseModel):
     first_name: Optional[str]
     second_name: Optional[str]
     last_name: Optional[str]
+
+
+class AnalOutDTO(BaseModel):
+    id: int
+    text: str
+    author_first_name: Optional[str]
+    author_second_name: Optional[str]
+    author_last_name: Optional[str] = Field("")
+    author_id: int
+    saved_at: str
 
 
 class UsersRepository:
@@ -32,7 +42,13 @@ class UsersRepository:
 
     async def get_by_login(self, login: str) -> Optional[User]:
         query = users.select().where(users.c.login == login)
-        return await self.database.fetch_one(query)
+        res = await self.database.fetch_one(query)
+        return UserOutDTO(
+            id=res.get("id"),
+            first_name=res.get("first_name"),
+            second_name=res.get("second_name"),
+            last_name=res.get("last_name"),
+        )
 
     async def create(self, data: User):
         query = users.insert().values(
@@ -184,6 +200,41 @@ class StatsPatientRepo:
                 room_id=room_id,
                 type=type_,
                 value=value,
+                saved_at=datetime.datetime.now(),
+            )
+        )
+
+        await self.database.execute(query)
+
+    # Я уже настолько преисполнился, что не буду выносить анализы и назначения в отдельные репозитории
+    async def get_anals(self, user_id: int, count: int = -1):
+        query = (
+            rozbory
+                .join(users, users.c.id == rozbory.c.author_id)
+                .select()
+                .where(rozbory.c.user_id == user_id)
+                .order_by(rozbory.c.saved_at.desc())
+        )
+        res = await self.database.fetch_all(query)
+        return [
+            AnalOutDTO(
+                id=v[rozbory.c.id],
+                text=v[rozbory.c.text],
+                author_first_name=v[users.c.first_name],
+                author_second_name=v[users.c.second_name],
+                author_last_name=v.get(users.c.last_name, ""),
+                author_id=v[rozbory.c.author_id],
+                saved_at=str(v[rozbory.c.saved_at]),
+            )
+            for v in res[::-1]
+        ]
+
+    async def push_anal(self, author_id: int, user_id: int, text: str):
+        query = (
+            rozbory.insert().values(
+                text=text,
+                author_id=author_id,
+                user_id=user_id,
                 saved_at=datetime.datetime.now(),
             )
         )

@@ -107,7 +107,7 @@ async def push_temp(
 ):
     if not user:
         raise Exception()
-    print(value,)
+    print(value, )
     await repository.push_new_value(patient_id=id, type_="temp", value=value, )
     return True
 
@@ -221,6 +221,30 @@ async def push_data(
     wg = int(need_to_set_up.get("wg", 0))
     print("*****************")
     return f"1 {need_heat}\n2 {mt}\n3 {lx}\n4 {wg}\n"
+
+
+@app.get("/api/patient/{id}/rozbory")
+async def get_anals(
+        id: int, repository=Depends(get_room_stats_repo)
+):
+    return await repository.get_anals(user_id=id)
+
+
+class Text(BaseModel):
+    text: str
+
+
+@app.post("/api/patient/{id}/rozbory")
+async def push_anal(
+        id: int,
+        input_dto: Text,
+        user=Depends(get_user_from_token),
+        repository=Depends(get_room_stats_repo),
+        users_repo=Depends(get_user_repository)
+):
+    us = await users_repo.get_by_login(user)
+    await repository.push_anal(user_id=id, author_id=us.id, text=input_dto.text)
+    return True
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Integer, Column, String, DateTime, ForeignKey, Float
+from sqlalchemy import Table, Integer, Column, String, DateTime, ForeignKey, Float, Text
 
 from db import metadata
 
@@ -67,4 +67,14 @@ room_params = Table(
     Column("type", String, nullable=False),
     Column("value", Float),
     Column("saved_at", DateTime(timezone=True))
+)
+
+rozbory = Table(
+    "rozbory",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", ForeignKey(_user_id, ondelete="CASCADE"), nullable=False),
+    Column("author_id", ForeignKey(_user_id, ondelete="CASCADE"), nullable=False),
+    Column("text", Text),
+    Column("saved_at", DateTime(timezone=True), nullable=False)
 )
