@@ -13,7 +13,9 @@ users = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("login", String, unique=True, nullable=False),
-    Column("fullName", String),
+    Column("first_name", String, default=""),
+    Column("second_name", String, default=""),
+    Column("last_name", String, default=""),
 )
 
 rooms = Table(

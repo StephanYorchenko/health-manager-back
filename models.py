@@ -1,10 +1,18 @@
 import random
 from typing import Optional, List
 
+from pydantic import BaseModel
 from sqlalchemy import select, and_
 
 from schema import User, RoomDTO
 from tables import users, rooms, users_rooms
+
+
+class UserOutDTO(BaseModel):
+    id: int
+    first_name: Optional[str]
+    second_name: Optional[str]
+    last_name: Optional[str]
 
 
 class UsersRepository:
@@ -13,7 +21,13 @@ class UsersRepository:
 
     async def get_by_id(self, user_id: str) -> Optional[User]:
         query = users.select().where(users.c.id == user_id)
-        return await self.database.fetch_one(query)
+        result = await self.database.fetch_one(query)
+        return UserOutDTO(
+            id=result.get("id"),
+            first_name=result.get("first_name"),
+            second_name=result.get("second_name"),
+            last_name=result.get("last_name"),
+        )
 
     async def get_by_login(self, login: str) -> Optional[User]:
         query = users.select().where(users.c.login == login)
@@ -34,7 +48,6 @@ class RoomsRepository:
     async def get_by_id(self, team_id: str) -> Optional[RoomDTO]:
         # query = rooms.select().where(teams.c.id == team_id)
         # return await self.database.fetch_one(query)
-        print(self)
         return RoomDTO(
             name="Палата №6",
             id=int(team_id)
@@ -53,7 +66,7 @@ class RoomsRepository:
 
     async def get_users_by_room_id(self, room_id: int) -> List[User]:
         query = (
-            select((users.c.id, users.c.fullName))
+            select((users.c.id, users.c.first_name, users.c.second_name))
                 .select_from(users.join(users_rooms, users.c.id == users_rooms.c.user_id))
                 .where(users_rooms.c.room_id == room_id)
         )
@@ -61,7 +74,7 @@ class RoomsRepository:
         return [User(
             id=v.get("id"),
             login="",
-            fullName=v.get("fullName"),
+            fullName=v.get("second_name") + " " + v.get("first_name"),
         ) for v in result]
 
     async def create(self, room_name: str):

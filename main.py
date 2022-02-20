@@ -193,6 +193,12 @@ async def get_patient_hmotnost_log(
     ]
 
 
+@app.get("/api/patient/{id}")
+async def get_patient(id: int, repository=Depends(get_user_repository)):
+    user = await repository.get_by_id(user_id=id)
+    return user
+
+
 @app.get("/api/patient/{id}/ivl")
 async def get_patient_ivl(
         id: int
