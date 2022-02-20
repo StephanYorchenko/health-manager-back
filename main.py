@@ -209,12 +209,16 @@ async def push_data(
     data = await request.json()
     print("Даня лох", data)
     data = DataPush.parse_obj(data)
+    print('-----')
     for k, v in data.dict().items():
         await repository.push_new_value_room(room_id=1, type_=k, value=v)
+    print('############')
     need_to_set_up = await repository.get_setted_params(room_id=1, type_=["heat", "mt", "lx"])
+    print('&&&&&&&&&&&&&&&&')
     need_heat = need_to_set_up.get("heat", 25)
     mt = need_to_set_up.get("mt", 25)
     lx = need_to_set_up.get("lx", 3500)
+    print("*****************")
     return f"1 {need_heat}\n2 {mt}\n3 {lx}\n"
 
 

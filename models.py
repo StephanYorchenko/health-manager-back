@@ -90,13 +90,13 @@ class RoomsRepository:
 
 class StatsType(BaseModel):
     type: str
-    value: int
+    value: float
     saved_at: str
 
 
 class ParamsSetted(BaseModel):
     type: str
-    value: int
+    value: float
 
 
 class StatsPatientRepo:
@@ -169,7 +169,6 @@ class StatsPatientRepo:
                 .select_from(room_params)
                 .where(and_(room_params.c.room_id == room_id, room_params.c.type.in_(type_)))
                 .order_by(room_params.c.saved_at.desc())
-                .distinct(room_params.c.type)
         )
         result = await self.database.fetch_all(query)
         return {
