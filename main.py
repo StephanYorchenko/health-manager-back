@@ -101,97 +101,53 @@ class TempDTO(EventInDTO):
 
 
 @app.post("/api/temp")
-async def push_temp(data: TempDTO, user=Depends(get_user_from_token), ):
-    await broadcast.publish(
-        data.user_id,
-        data.json()
-    )
+async def push_temp(
+            id: int, value: int = Body(...), user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
+):
+    if not user:
+        raise Exception()
+    await repository.push_new_value(patient_id=id, type_="temp", value=value, )
     return True
 
 
 @app.get("/api/patient/{id}/temp")
 async def get_patient_temperature_log(
-        id: int
+        id: int, user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
 ):
-    return [
-        TempDTO(
-            value=36.6,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=10, minute=0)
-        ),
-        TempDTO(
-            value=36.8,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=11, minute=0)
-        ),
-        TempDTO(
-            value=36.9,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=12, minute=0)
-        ),
-        TempDTO(
-            value=36.7,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=13, minute=0)
-        ),
-        TempDTO(
-            value=36.6,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=14, minute=0)
-        ),
-        TempDTO(
-            value=36.8,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=15, minute=0)
-        ),
-        TempDTO(
-            value=36.9,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=16, minute=0)
-        ),
-        TempDTO(
-            value=36.7,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=18, hour=17, minute=0)
-        ),
-    ]
+    if not user:
+        raise Exception()
+    return await repository.get_n_last_values(
+        patient_id=id,
+        count=10,
+        type_="temp"
+    )
 
 
 class HmotnostDTO(EventInDTO):
     type_event = EventTypes.hmotnost
 
 
+@app.post("/api/patient/{id}/hmotnost")
+async def push_hmotnost(
+        id: int, value: int = Body(...), user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
+):
+    if not user:
+        raise Exception()
+    await repository.push_new_value(patient_id=id, type_="hmotnost", value=value, )
+    return True
+
+
 @app.get("/api/patient/{id}/hmotnost")
 async def get_patient_hmotnost_log(
-        id: int
+        id: int, user=Depends(get_user_from_token), repository=Depends(get_room_stats_repo)
 ):
-    return [
-        HmotnostDTO(
-            value=85.3,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=13, hour=10, minute=0)
-        ),
-        HmotnostDTO(
-            value=85.5,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=14, hour=11, minute=0)
-        ),
-        HmotnostDTO(
-            value=85.6,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=15, hour=12, minute=0)
-        ),
-        HmotnostDTO(
-            value=87.1,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=16, hour=13, minute=0)
-        ),
-        HmotnostDTO(
-            value=86.6,
-            user_id=2,
-            saved_at=datetime(year=2022, month=2, day=17, hour=14, minute=0)
-        )
-    ]
+    if not user:
+        raise Exception()
+    return await repository.get_n_last_values(
+        patient_id=id,
+        count=10,
+        type_="hmotnost"
+    )
 
 
 @app.get("/api/patient/{id}")
