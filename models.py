@@ -226,7 +226,7 @@ class StatsPatientRepo:
                 author_id=v[rozbory.c.author_id],
                 saved_at=str(v[rozbory.c.saved_at]),
             )
-            for v in res[::-1]
+            for v in res
         ]
 
     async def push_anal(self, author_id: int, user_id: int, text: str):
