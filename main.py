@@ -7,6 +7,7 @@ import uvicorn
 from fastapi import Depends, Body
 from pydantic import BaseModel
 from starlette.concurrency import run_until_first_complete
+from starlette.requests import Request
 from starlette.websockets import WebSocket
 
 from app import app, broadcast
@@ -224,8 +225,9 @@ class DataPush(BaseModel):
 
 
 @app.post("/api/push")
-def push_data(data: DataPush = Body(...)):
-    return data
+async def push_data(request: Request):
+    print(await request.json())
+    return 1
 
 
 if __name__ == "__main__":

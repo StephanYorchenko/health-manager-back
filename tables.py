@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Integer, Column, String, DateTime, ForeignKey
+from sqlalchemy import Table, Integer, Column, String, DateTime, ForeignKey, Float
 
 from db import metadata
 
@@ -39,4 +39,22 @@ stats_pacient_temp = Table(
     Column("user_id", ForeignKey(_user_id, ondelete="CASCADE"), nullable=False),
     Column("value", Integer),
     Column("saved_at", DateTime)
+)
+
+stats_patient = Table(
+    "stats_patient",
+    metadata,
+    Column("user_id",  ForeignKey(_user_id, ondelete="CASCADE"), nullable=False),
+    Column("type", String, nullable=False),
+    Column("value", Float),
+    Column("saved_at", DateTime(timezone=True))
+)
+
+room_params = Table(
+    "room_params",
+    metadata,
+    Column("room_id",  ForeignKey(_room_id, ondelete="CASCADE"), nullable=False),
+    Column("type", String, nullable=False),
+    Column("value", Float),
+    Column("saved_at", DateTime(timezone=True))
 )
