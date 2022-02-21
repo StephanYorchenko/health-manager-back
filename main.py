@@ -230,6 +230,13 @@ async def get_temparature(
     return await repository.get_stats_room(room_id=id, type_="temp")
 
 
+@app.get("/api/rooms/{id}/lx")
+async def get_lx(
+        id: int, repository=Depends(get_room_stats_repo)
+):
+    return await repository.get_stats_room(room_id=id, type_="lx")
+
+
 @app.get("/api/patient/{id}/rozbory")
 async def get_anals(
         id: int, repository=Depends(get_room_stats_repo)
