@@ -281,5 +281,24 @@ async def push_jmenovani(
     return True
 
 
+class UserNames(BaseModel):
+    firstName: str
+    secondName: str
+    lastName: str
+    login: str
+
+
+@app.post("/api/{id}/create")
+async def create_user(id: int, data: UserNames, repository=Depends(get_user_repository)):
+    await repository.create(
+        room_id=id,
+        fn=data.firstName,
+        sn=data.secondName,
+        ln=data.lastName,
+        lg=data.login
+    )
+    return 1
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

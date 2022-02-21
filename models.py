@@ -50,12 +50,23 @@ class UsersRepository:
             last_name=res.get("last_name"),
         )
 
-    async def create(self, data: User):
+    async def create(self, room_id: int, fn: str, sn: str, ln: str, lg: str):
+        id = random.randint(100, 1000000)
         query = users.insert().values(
-            login=data.login,
-            fullName=data.fullName,
+            login=lg,
+            first_name=fn,
+            second_name=sn,
+            last_name=ln,
+            id=id
         )
         await self.database.execute(query)
+        query1 = (
+            users_rooms.insert().values(
+                user_id=id,
+                room_id=room_id
+            )
+        )
+        await self.database.execute(query1)
 
 
 class RoomsRepository:
