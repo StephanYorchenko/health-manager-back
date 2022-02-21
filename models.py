@@ -177,6 +177,22 @@ class StatsPatientRepo:
         )
         await self.database.execute(query)
 
+    async def get_stats_room(self, type_: str, room_id: int):
+        query = (
+            stats_room
+                .select()
+                .where(
+                    and_(
+                        stats_room.c.room_id == room_id,
+                        stats_room.c.type == type_
+                    )
+                )
+                .order_by(stats_room.c.saved_at.desc())
+                .limit(20)
+        )
+        data = await self.database.fetch_all(query)
+        return [v.get("value") for v in data]
+
     async def get_setted_params(self, room_id, type_: List[str] = None):
         if type_ is None:
             type_ = []

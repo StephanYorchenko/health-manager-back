@@ -223,6 +223,13 @@ async def push_data(
     return f"1 {need_heat}\n2 {mt}\n3 {lx}\n4 {wg}\n"
 
 
+@app.get("/api/rooms/{id}/temperature")
+async def get_temparature(
+        id: int, repository=Depends(get_room_stats_repo)
+):
+    return await repository.get_stats_room(room_id=id, type_="temp")
+
+
 @app.get("/api/patient/{id}/rozbory")
 async def get_anals(
         id: int, repository=Depends(get_room_stats_repo)
