@@ -40,7 +40,7 @@ async def get_room(
 
 
 @app.get("/api/rooms/{id}/patients", response_model=List[User])
-async def get_room(
+async def get_rooma(
         id: int, user=Depends(get_user_from_token), repository=Depends(get_user_repository),
         rooms_repository=Depends(get_rooms_repo)
 ):
@@ -166,9 +166,18 @@ async def get_patient_ivl(
         id: int,
         repository=Depends(get_room_stats_repo)
 ):
-    return await repository.get_n_last_values(
-        patient_id=id, type_="ivl", count=1
-    )
+    data = await repository.get_stats_room(room_id=id, type_="ivl")
+    data = map(int, data[:3])
+    return not all(data)
+
+
+class InputDROIvl(BaseModel):
+    value: float
+
+
+@app.post("/api/patient/{id}/set_ivl")
+async def set_ivl(id: int, data: InputDROIvl, repository=Depends(get_room_stats_repo)):
+    return await repository.push_new_value_room(room_id=id, value=data.value, type_="ivl")
 
 
 @app.get("/api/check")
